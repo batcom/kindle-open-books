@@ -1,0 +1,43 @@
+#!/usr/bin/env  python
+
+from calibre.web.feeds.recipes import BasicNewsRecipe
+
+class test(BasicNewsRecipe):
+ 
+    title = 'neeDocs'
+    description = '倪柝声全集'
+    cover_url = 'http://iissnan.com/progit/assets/img/pro-git-cover.jpeg'
+ 
+    url_prefix = 'http://www.jonahome.net/files/nee/'
+    no_stylesheets = True
+
+    def get_title(self, link):
+        if len(link)==0:
+            return ''
+        return link.contents[0].strip()
+ 
+    def parse_index(self):
+        ans = []
+        soup = self.index_to_soup(self.url_prefix+ 'index.htm')
+        table = soup.find('table')
+        for volUrl in table.findAll('a'):
+            url = self.url_prefix+volUrl['href']
+            voltitle = self.get_title(volUrl)
+            vurlprefix = url.replace('index.html','')
+            sou = self.index_to_soup(vurlprefix+'list.html')
+            articles = []
+            table = sou.find('table')
+            for alink in table.findAll('a'):
+                '''if alink.find('font'):
+                    f = alink.find('font')
+                    title = self.get_title(f)
+                else:
+                    print alink,type(alink)
+                    title = self.get_title(alink)'''
+                #print type(alink),self.tag_to_string(alink)
+                title =self.tag_to_string(alink)
+                print title
+                a = { 'title': title, 'url': vurlprefix+alink['href']}
+                articles.append(a)
+            ans.append((voltitle,articles))
+        return ans

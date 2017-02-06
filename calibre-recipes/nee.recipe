@@ -1,0 +1,39 @@
+#!/usr/bin/env  python
+
+from calibre.web.feeds.recipes import BasicNewsRecipe
+
+class test(BasicNewsRecipe):
+ 
+    title = 'neeDocs'
+    description = '倪柝声全集'
+    cover_url = 'http://cclw.net/soul/nituoshen/img/ni.jpg'
+ 
+    url_prefix = 'http://cclw.net/soul/nituoshen/'
+    no_stylesheets = True
+
+    def get_title(self, link):
+        if len(link)==0:
+            return ''
+        return link.contents[0].strip()
+ 
+    def parse_index(self):
+        ans = []
+        soup = self.index_to_soup(self.url_prefix+ 'index.htm')
+        tds = soup.findAll('td',{"bgcolor":"#fefde0"})
+        for td in tds: 
+            for volUrl in td.findAll('a'):
+                voltitle = self.tag_to_string(volUrl)
+                print "开始抓取"+voltitle
+                sou = self.index_to_soup(volUrl['href'])
+                newpreurl = volUrl['href'].replace('index.html','')
+                articles = []
+                for alink in sou.findAll('a'):
+                    #print type(alink),self.tag_to_string(alink)
+                    title =self.tag_to_string(alink)
+                    print title,alink
+                    if "目录" in title or not alink.get('href'):
+                        continue
+                    a = { 'title': title, 'url': newpreurl+alink['href']}
+                    articles.append(a)
+                ans.append((voltitle,articles))
+        return ans
